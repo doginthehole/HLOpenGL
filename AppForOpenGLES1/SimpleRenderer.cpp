@@ -252,6 +252,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vertexPositions[3 * i+2] /= 100.0;
 
 
+
 	}
 	
 
