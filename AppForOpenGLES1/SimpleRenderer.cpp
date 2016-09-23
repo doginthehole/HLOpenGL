@@ -256,6 +256,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	
 
 
+
 	float a = 3.3f;
 	int b = 2;
 	
