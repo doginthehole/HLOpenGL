@@ -6,6 +6,7 @@
 #include "SimpleRenderer.h"
 #include "MathHelper.h"
 #include "vtkPolyDataNormals.h"
+#include <shader.hpp>
 
 // These are used by the shader compilation methods.
 #include <vector>
@@ -108,6 +109,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtl::Sleep(100);
 	}
 	localMutex->Unlock();
+
+	GLuint programID = LoadShaders("frag.frag", "vert.vert");
+
 	// Vertex Shader source
 	const std::string vs = isHolographic ?
 		STRING
@@ -232,7 +236,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		pointsArray->GetPoint(i, pos);
 		vertexPositions[3 * i] = pos[0] - centerPos[0];
 		vertexPositions[3 * i + 1] = pos[1] - centerPos[1];
-		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 150; //the x plane of the object, increased by 200 to bring it closer
+		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 260; //the x plane of the object, increased by 200 to bring it closer
 		
 		
 		// must now include surface normals for each vert, this will be multiplied by the collor 
@@ -244,9 +248,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtlFloat32 one = 1.0;
 		
 		// this will probably need to be moved out of loop, after poly loop
-		vertexColors[3 * i] = one * norm0[0];		//The color of the object by vertex
-		vertexColors[3 * i + 1] = one * norm0[0];
-		vertexColors[3 * i + 2] = one * norm0[0];
+		vertexColors[3 * i] = 1 * .5;		//The color of the object by vertex
+		vertexColors[3 * i + 1] = 1 * .5;
+		vertexColors[3 * i + 2] = 1 * .5;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -254,13 +258,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 
 	}
-	
-
-	float a = 3.3f;
-	int b = 2;
-	
-	float c = a * b;
-
 
 
 	//std::list<unsigned int>::iterator iter;
@@ -287,13 +284,26 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 		*/
 
+	//load normals in buffer
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normArray)*numNormals * 3, normArray, GL_STATIC_DRAW);
 
 
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
 
-
-
-
-
+	//float cosTheta = dot();
+	
 
 
 
