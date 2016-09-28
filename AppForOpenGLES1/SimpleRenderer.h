@@ -14,21 +14,14 @@ namespace AppForOpenGLES1
         void UpdateWindowSize(GLsizei width, GLsizei height);
 
 		//templated clamp function
-		template < class X >
-		X template clamp(X input, X min, X max) {
-			if (input < min)
-				return min;
-			else if (input > max)
-				return max;
-			return input;
-		}
 
+/*
 		double dot(double normal, double lightPos) {
 			
 			double result = abs(normal + lightPos);
 
 			return result;
-		}
+		}*/
 
     private:
         GLuint mProgram;
@@ -50,5 +43,9 @@ namespace AppForOpenGLES1
 
         int mDrawCount;
         bool mIsHolographic;
+
+		//std::vector<Vector3> vertices;
+		//std::vector<Vector4> colors;
+
     };
 }

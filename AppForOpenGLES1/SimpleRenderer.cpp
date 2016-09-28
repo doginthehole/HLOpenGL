@@ -7,15 +7,18 @@
 #include "MathHelper.h"
 #include "vtkPolyDataNormals.h"
 #include <shader.hpp>
-
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 // These are used by the shader compilation methods.
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include "PolyDataReceiver.cpp"
 
+using namespace std;
 using namespace Platform;
-
 using namespace AppForOpenGLES1;
 
 #define STRING(s) #s
@@ -109,8 +112,8 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtl::Sleep(100);
 	}
 	localMutex->Unlock();
+	//"frag.frag", "vert.vert"
 
-	GLuint programID = LoadShaders("frag.frag", "vert.vert");
 
 	// Vertex Shader source
 	const std::string vs = isHolographic ?
@@ -215,7 +218,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	int numNormals = normArray->GetSize();
 
 	int numPolys = polygonsArray->GetNumberOfCells();
-	GLfloat* vertexColors = new GLfloat[3 * numPoints];
+	GLfloat* vertexColors = new GLfloat[3 * numPolys];
 	//short* indices = new short[3 * numPolys];
 	GLfloat centerPos[3] = { 0,0,0 };
 	GLfloat* vertexPositions = new GLfloat[3 * numPoints];
@@ -248,9 +251,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtlFloat32 one = 1.0;
 		
 		// this will probably need to be moved out of loop, after poly loop
-		vertexColors[3 * i] = 1 * .5;		//The color of the object by vertex
-		vertexColors[3 * i + 1] = 1 * .5;
-		vertexColors[3 * i + 2] = 1 * .5;
+		vertexColors[3 * i] = one * norm0[0];		//The color of the object by vertex
+		vertexColors[3 * i + 1] = one * norm0[0];
+		vertexColors[3 * i + 2] = one * norm0[0];
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -275,38 +278,48 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		}
 	}
 
+
+
 	//Let's just have some space to setup the lighting for this module
-
 	/*
-	const GLfloat ambientLight[] = { 0.05, 0.05, 0.05, 1.0 };
-	GLint ambientLightUniformLocation = glGetUniformLocation(mProgram, ")
+	GLuint LoadShaders(GLenum type, const char *shaderSrc) 
+	{
+		GLuint shader;
+		GLint compiled;
 
+		//create the shader object
+		shader = glCreateShader(type);
 
-		*/
-
-	//load normals in buffer
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normArray)*numNormals * 3, normArray, GL_STATIC_DRAW);
-
-
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glVertexAttribPointer(
-		2,                                // attribute
-		3,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	//float cosTheta = dot();
+		if (shader == 0)
+			return 0;
 	
+		// load shader source
+		glShaderSource(shader, 1, &shaderSrc, NULL);
 
+		//compile the shader
+		glCompileShader(shader);
 
+		//Check compilation
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 
+		if (!compiled)
+		{
+			GLint inforLen = 0;
+
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+
+			if (infoLen > 1)
+			{
+				char* infoLog = malloc(sizeof(char) * infoLen);
+
+				glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+				esLogMessage("error compiling shader:\n%s\n", infoLog);
+
+				free(infoLog);
+			}
+		}
+	}
+*/
 
 	//The surface normals will need to be calculated 
 
@@ -317,7 +330,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPoints * 3, vertexColors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
 	/*short indicesreference[] =
 	{
 	0, 1, 2, // -x
@@ -350,6 +363,24 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 
+
+	
+	//load normals in buffer
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normArray)*numNormals * 3, normArray, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
 	mIsHolographic = isHolographic;
 }
 
@@ -379,6 +410,20 @@ SimpleRenderer::~SimpleRenderer()
 		mIndexBuffer = 0;
 	}
 }
+
+template < class X >             // define template function
+X clamp(X input, X min, X max)
+{
+
+	if (input < min)
+		return min;
+	else if (input > max)
+		return max;
+	return input;
+
+	return input;
+}
+
 
 void SimpleRenderer::Draw()
 {
