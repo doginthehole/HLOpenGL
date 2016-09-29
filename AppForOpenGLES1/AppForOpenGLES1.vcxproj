@@ -110,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="esUtil.h" />
     <ClInclude Include="SimpleRenderer.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="pch.h" />

@@ -7,7 +7,6 @@
 //
 
 #include <stdio.h>
-
 #include <iostream>
 #include <iomanip>
 #include <math.h>
