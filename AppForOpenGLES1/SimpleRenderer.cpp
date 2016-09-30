@@ -251,9 +251,12 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtlFloat32 one = 1.0;
 		
 		// this will probably need to be moved out of loop, after poly loop
-		vertexColors[3 * i] = one * norm0[0];		//The color of the object by vertex
-		vertexColors[3 * i + 1] = one * norm0[0];
-		vertexColors[3 * i + 2] = one * norm0[0];
+		//vertexColors[3 * i] = one * norm0[0];		//The color of the object by vertex
+		//vertexColors[3 * i + 1] = one * norm0[0];
+		//vertexColors[3 * i + 2] = one * norm0[0];		
+		vertexColors[3 * i] = 1;		//The color of the object by vertex
+		vertexColors[3 * i + 1] = 1;
+		vertexColors[3 * i + 2] = 1;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -329,6 +332,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 
 	
+	/*
 	//load normals in buffer
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
@@ -336,17 +340,16 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBufferData(GL_ARRAY_BUFFER, sizeof(normArray)*numNormals * 3, normArray, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	
 	glVertexAttribPointer(
 		2,                                // attribute
 		3,                                // size
 		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
+		GL_TRUE,                         // normalized?
 		0,                                // stride
 		(void*)0                          // array buffer offset
-	);
+	);*/
 
-
-	//let's load those shaders
 
 	mIsHolographic = isHolographic;
 }
@@ -519,7 +522,7 @@ int Init(ESContext *esContext)
 	// Store the program object
 	//userData->programObject = programObject;
 
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	//commented glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	return TRUE;
 }
 
@@ -541,11 +544,11 @@ void SimpleRenderer::Draw()
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
 	glEnableVertexAttribArray(mPositionAttribLocation);
-	glVertexAttribPointer(mPositionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(mPositionAttribLocation, 3, GL_FLOAT, GL_TRUE, 0, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glEnableVertexAttribArray(mColorAttribLocation);
-	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_TRUE, 0, 0);
 
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
@@ -555,7 +558,7 @@ void SimpleRenderer::Draw()
 	{
 		// Load the render target array indices into an array.
 		glBindBuffer(GL_ARRAY_BUFFER, mRenderTargetArrayIndices);
-		glVertexAttribPointer(mRtvIndexAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(mRtvIndexAttribLocation, 1, GL_FLOAT, GL_TRUE, 0, 0);
 		glEnableVertexAttribArray(mRtvIndexAttribLocation);
 
 		// Enable instancing.
