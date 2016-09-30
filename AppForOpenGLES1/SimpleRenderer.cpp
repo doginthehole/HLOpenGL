@@ -125,6 +125,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	uniform mat4 uHolographicViewProjectionMatrix[2];
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
+	attribute vec4 normals;
 	attribute float aRenderTargetArrayIndex;
 	varying vec4 vColor;
 	varying float vRenderTargetArrayIndex;
@@ -381,23 +382,7 @@ SimpleRenderer::~SimpleRenderer()
 	}
 }
 
-
-
-template < class X >             // define template function
-X clamp(X input, X min, X max)
-{
-
-	if (input < min)
-		return min;
-	else if (input > max)
-		return max;
-	return input;
-
-	return input;
-}
-
-
-
+/*
 ///from hello triangle
 GLuint LoadShader(GLenum type, const char *shaderSrc)
 {
@@ -505,7 +490,7 @@ int Init(ESContext *esContext)
 
 		glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
 
-		/*if (infoLen > 1)
+		if (infoLen > 1)
 		{
 			char *infoLog = malloc(sizeof(char) * infoLen);
 
@@ -513,7 +498,7 @@ int Init(ESContext *esContext)
 			esLogMessage("Error linking program:\n%s\n", infoLog);
 
 			free(infoLog);
-		}*/
+		}
 
 		glDeleteProgram(programObject);
 		return FALSE;
@@ -525,7 +510,7 @@ int Init(ESContext *esContext)
 	//commented glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	return TRUE;
 }
-
+*/
 
 void SimpleRenderer::Draw()
 {
@@ -593,4 +578,18 @@ void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 		mWindowWidth = width;
 		mWindowHeight = height;
 	}
+}
+
+
+template < class X >  // define template function
+X clamp(X input, X min, X max)
+{
+
+	if (input < min)
+		return min;
+	else if (input > max)
+		return max;
+	return input;
+
+	return input;
 }
