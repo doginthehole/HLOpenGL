@@ -16,12 +16,17 @@
 #include <fstream>
 #include "PolyDataReceiver.cpp"
 #include "esUtil.h"
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtx\transform.hpp>
 
 using namespace std;
 using namespace Platform;
 using namespace AppForOpenGLES1;
 
 #define STRING(s) #s
+
+//GLuint programID;
 
 GLuint CompileShader(GLenum type, const std::string &source)
 {
@@ -117,40 +122,47 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	// Vertex Shader source
 	const std::string vs = isHolographic ?
-		STRING
-		(
-			// holographic version
-
+			STRING
+		(// holographic version
 			uniform mat4 uModelMatrix;
-	uniform mat4 uHolographicViewProjectionMatrix[2];
-	attribute vec4 aPosition;
-	attribute vec4 aColor;
-	attribute vec4 normals;
-	attribute float aRenderTargetArrayIndex;
-	varying vec4 vColor;
-	varying float vRenderTargetArrayIndex;
-	void main()
-	{
-		int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
-		gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
-		vColor = aColor;
-		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
-	}
+			uniform mat4 uHolographicViewProjectionMatrix[2];
+			uniform vec3 lightPosition;
+			attribute vec4 aPosition;
+			attribute vec4 aColor;
+			attribute vec3 aNormal;
+			attribute float aRenderTargetArrayIndex;
+			varying vec4 vColor;
+			varying float vRenderTargetArrayIndex;
+		void main()
+		{
+			int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
+			gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
+			vRenderTargetArrayIndex = aRenderTargetArrayIndex;
+			//vec3 lightVector = normalize(lightPosition - position);
+			//vColor = aColor * dot(lightVector, aNormal);
+			vColor = aColor;
+		}
 	) : STRING
-	(
+	(//non holographic
 		uniform mat4 uModelMatrix;
-	uniform mat4 uViewMatrix;
-	uniform mat4 uProjMatrix;
-	attribute vec4 aPosition;
-	attribute vec4 aColor;
-	varying vec4 vColor;
-	void main()
+		uniform mat4 uViewMatrix;
+		uniform mat4 uProjMatrix;
+		uniform vec3 lightPosition;
+		attribute vec4 aPosition;
+		attribute vec4 aColor;
+		attribute vec4 aNormal;
+		varying vec4 vColor;
+		void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
-		vColor = aColor;
-	}
+		vec3 lightVector = normalize(lightPosition - position);
+		float brightness = dot(lightVector, aNormal);
+		//vColor = aColor * dot(lightVector, aNormal);
+		//vColor = aColor;
+		vColor = vec4(brightness, brightness, brightness, 1);
+		}
 	);
-
+	
 	// Fragment Shader source
 	const std::string fs = isHolographic ? // TODO: this should not be necessary
 		STRING
@@ -177,40 +189,18 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mProgram = CompileProgram(vs, fs);
 	mPositionAttribLocation = glGetAttribLocation(mProgram, "aPosition");
 	mColorAttribLocation = glGetAttribLocation(mProgram, "aColor");
+	mNormalAttribLocation = glGetAttribLocation(mProgram, "aNormal");
 	mRtvIndexAttribLocation = glGetAttribLocation(mProgram, "aRenderTargetArrayIndex");
 	mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
 	mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
 
-	// Then set up the cube geometry.
-	/*float halfWidth = isHolographic ? 0.1f : 0.5f;
-	GLfloat vertexPositions[] =
-	{
-	-halfWidth, -halfWidth, -halfWidth,
-	-halfWidth, -halfWidth,  halfWidth,
-	-halfWidth,  halfWidth, -halfWidth,
-	-halfWidth,  halfWidth,  halfWidth,
-	halfWidth, -halfWidth, -halfWidth,
-	halfWidth, -halfWidth,  halfWidth,
-	halfWidth,  halfWidth, -halfWidth,
-	halfWidth,  halfWidth,  halfWidth,
-	halfWidth *2, halfWidth *2, halfWidth*2,
-	};
+	//Light
+	GLint diffuseLightUniformLocation = glGetUniformLocation(mProgram, "lightPosition");
+	glm::vec3 lightPosition(0.0f, 3.0f, 0.0f);
+	glUniform3fv(diffuseLightUniformLocation, 1, &lightPosition[0]);
 
-
-	GLfloat vertexColors[] =
-	{
-	0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	};
-	*/
+	// Then set up the model geometry.
 	float pos[3] = { 0 };
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
@@ -240,7 +230,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		pointsArray->GetPoint(i, pos);
 		vertexPositions[3 * i] = pos[0] - centerPos[0];
 		vertexPositions[3 * i + 1] = pos[1] - centerPos[1];
-		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 260; //the x plane of the object, increased by 200 to bring it closer
+		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 250; //the x plane of the object, increased by 200 to bring it closer
 		
 		
 		// must now include surface normals for each vert, this will be multiplied by the collor 
@@ -284,13 +274,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 
 
-	//Let's just have some space to setup the lighting for this module
-	
-	
-
-
-	//The surface normals will need to be calculated 
-
 	int temp2 = sizeof(vertexPositions)*numPoints * 3;
 	glGenBuffers(1, &mVertexPositionBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
@@ -299,29 +282,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
-	/*short indicesreference[] =
-	{
-	0, 1, 2, // -x
-	1, 3, 2,
 
-	4, 6, 5, // +x
-	5, 6, 7,
-
-	0, 5, 1, // -y
-	0, 4, 5,
-
-	2, 7, 6, // +y
-	2, 3, 7,
-
-	0, 6, 4, // -z
-	0, 2, 6,
-
-	1, 7, 3, // +z
-	1, 5, 7,
-	};
-	for (int i = 0; i < 36; i++)
-		indices[i] = indicesreference[i];
-	int temp = sizeof(indices);*/
 	glGenBuffers(1, &mIndexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*indices)* numPolys * 3, indices, GL_STATIC_DRAW);
@@ -331,7 +292,10 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 
-
+	//normals
+	glGenBuffers(2, &mNormalBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mNormalBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexColors)*numNormals * 3, normArray, GL_STATIC_DRAW);
 	
 	/*
 	//load normals in buffer
@@ -382,136 +346,6 @@ SimpleRenderer::~SimpleRenderer()
 	}
 }
 
-/*
-///from hello triangle
-GLuint LoadShader(GLenum type, const char *shaderSrc)
-{
-	GLuint shader;
-	GLint compiled;
-
-	// Create the shader object
-	shader = glCreateShader(type);
-
-	if (shader == 0)
-	{
-		return 0;
-	}
-
-	// Load the shader source
-	glShaderSource(shader, 1, &shaderSrc, NULL);
-
-	// Compile the shader
-	glCompileShader(shader);
-
-	// Check the compile status
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-	if (!compiled)
-	{
-		GLint infoLen = 0;
-
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-
-		if (infoLen > 1)
-		{
-			//infoLen = (char *infoLen)  malloc(sizeof(char));
-
-			//char* infoLog = new char(infoLen);
-
-			GLchar * infoLog = nullptr;
-
-			glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-			//esLogMessage("Error compiling shader:\n%s\n", infoLog);
-
-			free(infoLog);
-		}
-
-		glDeleteShader(shader);
-		return 0;
-	}
-
-	return shader;
-
-}
-
-
-///from hello triangle
-// Initialize the shader and program object
-int Init(ESContext *esContext)
-{
-	//UserData *userData = esContext->userData;
-	//UserData *userData = esContext->userData;
-	char vShaderStr[] =
-		"#version 300 es                          \n"
-		"layout(location = 0) in vec4 vPosition;  \n"
-		"void main()                              \n"
-		"{                                        \n"
-		"   gl_Position = vPosition;              \n"
-		"}                                        \n";
-
-	char fShaderStr[] =
-		"#version 300 es                              \n"
-		"precision mediump float;                     \n"
-		"out vec4 fragColor;                          \n"
-		"void main()                                  \n"
-		"{                                            \n"
-		"   fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );  \n"
-		"}                                            \n";
-
-	GLuint vertexShader;
-	GLuint fragmentShader;
-	GLuint programObject;
-	GLint linked;
-
-	// Load the vertex/fragment shaders
-	vertexShader = LoadShader(GL_VERTEX_SHADER, vShaderStr);
-	fragmentShader = LoadShader(GL_FRAGMENT_SHADER, fShaderStr);
-
-	// Create the program object
-	programObject = glCreateProgram();
-
-	if (programObject == 0)
-	{
-		return 0;
-	}
-
-	glAttachShader(programObject, vertexShader);
-	glAttachShader(programObject, fragmentShader);
-
-	// Link the program
-	glLinkProgram(programObject);
-
-	// Check the link status
-	glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
-
-	if (!linked)
-	{
-		GLint infoLen = 0;
-
-		glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
-
-		if (infoLen > 1)
-		{
-			char *infoLog = malloc(sizeof(char) * infoLen);
-
-			glGetProgramInfoLog(programObject, infoLen, NULL, infoLog);
-			esLogMessage("Error linking program:\n%s\n", infoLog);
-
-			free(infoLog);
-		}
-
-		glDeleteProgram(programObject);
-		return FALSE;
-	}
-
-	// Store the program object
-	//userData->programObject = programObject;
-
-	//commented glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-	return TRUE;
-}
-*/
-
 void SimpleRenderer::Draw()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -529,21 +363,29 @@ void SimpleRenderer::Draw()
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
 	glEnableVertexAttribArray(mPositionAttribLocation);
-	glVertexAttribPointer(mPositionAttribLocation, 3, GL_FLOAT, GL_TRUE, 0, 0);
+	glVertexAttribPointer(mPositionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glEnableVertexAttribArray(mColorAttribLocation);
-	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_TRUE, 0, 0);
+	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+	//Normals
+	glBindBuffer(GL_ARRAY_BUFFER, mNormalBuffer);
+	glEnableVertexAttribArray(mNormalAttribLocation);
+	glVertexAttribPointer(mNormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+	/*
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
-	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
+	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);	
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
+	*/
 
 	if (mIsHolographic)
 	{
 		// Load the render target array indices into an array.
 		glBindBuffer(GL_ARRAY_BUFFER, mRenderTargetArrayIndices);
-		glVertexAttribPointer(mRtvIndexAttribLocation, 1, GL_FLOAT, GL_TRUE, 0, 0);
+		glVertexAttribPointer(mRtvIndexAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(mRtvIndexAttribLocation);
 
 		// Enable instancing.

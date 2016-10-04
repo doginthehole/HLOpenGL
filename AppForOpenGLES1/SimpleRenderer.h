@@ -30,6 +30,7 @@ namespace AppForOpenGLES1
 
         GLint mPositionAttribLocation;
         GLint mColorAttribLocation;
+		GLint mNormalAttribLocation;
 
         GLint mModelUniformLocation;
         GLint mViewUniformLocation;
@@ -40,6 +41,7 @@ namespace AppForOpenGLES1
         GLuint mVertexColorBuffer;
         GLuint mIndexBuffer;
         GLuint mRenderTargetArrayIndices;
+		GLuint mNormalBuffer;
 
         int mDrawCount;
         bool mIsHolographic;
