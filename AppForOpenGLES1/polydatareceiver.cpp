@@ -22,14 +22,6 @@
 #include "igtlMultiThreader.h"
 #include "igtlConditionVariable.h"
 #include "igtlTimeStamp.h"
-/*
-#include "vtkRenderer.h"
-#include "vtkPolyData.h"
-#include "vtkPolygon.h"
-#include "vtkPoints.h"
-#include "vtkCell.h"
-#include "vtkPolyDataNormals.h"
-*/
 
 bool interactionActive;
 igtl::ConditionVariable::Pointer conditionVar;
@@ -38,6 +30,7 @@ int frameNum = 0;
 igtl::PolyDataPointArray::Pointer pointsArray;
 igtl::PolyDataCellArray::Pointer polygonsArray;
 igtl::PolyDataAttribute::Pointer normArray;
+igtlFloat32 colors[4] = { NULL };
 bool receivedData = false;
 
 bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer header)
@@ -143,7 +136,68 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 			}
 		}
 	}
-
+	
+	unsigned int nAttr = polyDataMsg->GetNumberOfAttributes();
+	/*
+	for (unsigned int i = 0; i < nAttr; i++)
+	{
+		std::cerr << "  ------ Attributes #" << i << " ------" << std::endl;
+		igtl::PolyDataAttribute * p = polyDataMsg->GetAttribute(i);
+		if (p)
+		{
+			std::cerr << "  Name = " << p->GetName() << std::endl;
+			std::cerr << "  Type = ";
+			switch (p->GetType())
+			{
+			case igtl::PolyDataAttribute::POINT_SCALAR:
+				std::cerr << "POINT_SCALAR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::POINT_VECTOR:
+				std::cerr << "POINT_VECTOR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::POINT_NORMAL:
+				std::cerr << "POINT_NORMAL" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::POINT_TENSOR:
+				std::cerr << "POINT_TENSOR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::POINT_RGBA:
+				///storing the color value here.
+				p->GetNthData(i, colors);
+				std::cerr << "POINT_RGBA" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::CELL_SCALAR:
+				std::cerr << "CELL_SCALAR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::CELL_VECTOR:
+				std::cerr << "CELL_VECTOR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::CELL_NORMAL:
+				std::cerr << "CELL_NORMAL" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::CELL_TENSOR:
+				std::cerr << "CELL_TENSOR" << std::endl;
+				break;
+			case igtl::PolyDataAttribute::CELL_RGBA:
+				std::cerr << "CELL_RGBA" << std::endl;
+				break;
+			}
+			unsigned int size = p->GetSize();
+			unsigned int ncomp = p->GetNumberOfComponents();
+			igtlFloat32 * data = new igtlFloat32[ncomp];
+			for (unsigned int j = 0; j < size; j++)
+			{
+				p->GetNthData(j, data);
+				std::cerr << "  data[" << j << "] = (" << data[0];
+				for (unsigned int k = 1; k < ncomp; k++)
+				{
+					std::cerr << ", " << data[k];
+				}
+				std::cerr << ")" << std::endl;
+			}
+		}
+	}
+	*/
 	// Triangle Strips
 	//igtl::PolyDataCellArray::Pointer triangleStripsArray = polyDataMsg->GetTriangleStrips();
 	//int ntstrips = triangleStripsArray.IsNotNull() ? triangleStripsArray->GetNumberOfCells() : 0;
@@ -172,7 +226,7 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 
 void ConnectionThread()
 {
-	char*  hostname = "localhost"; //		10.22.178.162	/////////////////////////////////////////////////////
+	char*  hostname = "localhost"; //		10.22.178.70	/////////////////////////////////////////////////////
 	int    port = 18944;			//
 									//------------------------------------------------------------
 									// Establish Connection
