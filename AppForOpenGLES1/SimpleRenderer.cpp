@@ -155,11 +155,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
-		vec3 lightVector = normalize(lightPosition - position);
-		float brightness = dot(lightVector, aNormal);
+		//vec3 lightVector = normalize(lightPosition - position);
+		//float brightness = dot(lightVector, aNormal);
 		//vColor = aColor * dot(lightVector, aNormal);
-		//vColor = aColor;
-		vColor = vec4(brightness, brightness, brightness, 1);
+		vColor = aColor;
+		//vColor = vec4(brightness, brightness, brightness, 1);
 		}
 	);
 	
@@ -375,7 +375,7 @@ void SimpleRenderer::Draw()
 	glVertexAttribPointer(mNormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 
-	/*
+/*	
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);	
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
