@@ -181,35 +181,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
 	mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
 
-	// Then set up the cube geometry.
-	/*float halfWidth = isHolographic ? 0.1f : 0.5f;
-	GLfloat vertexPositions[] =
-	{
-	-halfWidth, -halfWidth, -halfWidth,
-	-halfWidth, -halfWidth,  halfWidth,
-	-halfWidth,  halfWidth, -halfWidth,
-	-halfWidth,  halfWidth,  halfWidth,
-	halfWidth, -halfWidth, -halfWidth,
-	halfWidth, -halfWidth,  halfWidth,
-	halfWidth,  halfWidth, -halfWidth,
-	halfWidth,  halfWidth,  halfWidth,
-	halfWidth *2, halfWidth *2, halfWidth*2,
-	};
-
-
-	GLfloat vertexColors[] =
-	{
-	0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	};
-	*/
+	
 	float pos[3] = { 0 };
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
@@ -279,48 +251,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	}
 
 
-
-	//Let's just have some space to setup the lighting for this module
-	/*
-	GLuint LoadShaders(GLenum type, const char *shaderSrc) 
-	{
-		GLuint shader;
-		GLint compiled;
-
-		//create the shader object
-		shader = glCreateShader(type);
-
-		if (shader == 0)
-			return 0;
-	
-		// load shader source
-		glShaderSource(shader, 1, &shaderSrc, NULL);
-
-		//compile the shader
-		glCompileShader(shader);
-
-		//Check compilation
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-		if (!compiled)
-		{
-			GLint inforLen = 0;
-
-			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-
-			if (infoLen > 1)
-			{
-				char* infoLog = malloc(sizeof(char) * infoLen);
-
-				glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-				esLogMessage("error compiling shader:\n%s\n", infoLog);
-
-				free(infoLog);
-			}
-		}
-	}
-*/
-
 	//The surface normals will need to be calculated 
 
 	int temp2 = sizeof(vertexPositions)*numPoints * 3;
@@ -331,29 +261,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
-	/*short indicesreference[] =
-	{
-	0, 1, 2, // -x
-	1, 3, 2,
 
-	4, 6, 5, // +x
-	5, 6, 7,
-
-	0, 5, 1, // -y
-	0, 4, 5,
-
-	2, 7, 6, // +y
-	2, 3, 7,
-
-	0, 6, 4, // -z
-	0, 2, 6,
-
-	1, 7, 3, // +z
-	1, 5, 7,
-	};
-	for (int i = 0; i < 36; i++)
-		indices[i] = indicesreference[i];
-	int temp = sizeof(indices);*/
 	glGenBuffers(1, &mIndexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*indices)* numPolys * 3, indices, GL_STATIC_DRAW);

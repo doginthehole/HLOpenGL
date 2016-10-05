@@ -22,13 +22,14 @@
 #include "igtlMultiThreader.h"
 #include "igtlConditionVariable.h"
 #include "igtlTimeStamp.h"
+/*
 #include "vtkRenderer.h"
 #include "vtkPolyData.h"
 #include "vtkPolygon.h"
 #include "vtkPoints.h"
 #include "vtkCell.h"
 #include "vtkPolyDataNormals.h"
-
+*/
 
 bool interactionActive;
 igtl::ConditionVariable::Pointer conditionVar;
