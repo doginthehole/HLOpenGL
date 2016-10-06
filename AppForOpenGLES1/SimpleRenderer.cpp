@@ -142,7 +142,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	uniform mat4 uModelMatrix;
 	uniform mat4 uHolographicViewProjectionMatrix[2];
-	uniform vec3 lightPosition;
+
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
 	attribute vec3 aNormal;
@@ -158,10 +158,10 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	}
 	) : STRING
 	(//non holographic
-		uniform mat4 uModelMatrix;
+	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
-	
+
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
 	attribute vec3 aNormal;
@@ -210,7 +210,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
 	int numPoints = pointsArray->GetNumberOfPoints();
-
 	int numNormals = normArray->GetSize();
 
 	int numPolys = polygonsArray->GetNumberOfCells();
@@ -246,24 +245,25 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtlFloat32 one = 1.0;
 		//Convert color RGB to float out of 255
 
-		this doesn't work
+		//this doesn't work
 
 
 		float colorsF[4] = { NULL };
-
+		/*
 		for (int i = 0; i < 4; i++) {
 			colorsF[i] = colors[i] / 255;
 		}
-
+		float min;
+		*/
 
 		// this will probably need to be moved out of loop, after poly loop
 		//vertexColors[3 * i] = (one * norm0[0]) + .3;		//The color of the object by vertex
 		//vertexColors[3 * i + 1] = (one * norm0[0]) + .3;
 		//vertexColors[3 * i + 2] = (one * norm0[0]) + .3;
-		igtlFloat32 coloring = clamp((one * norm0[0]), .3f, one);
-		vertexColors[3 * i + 0] = coloring;
-		vertexColors[3 * i + 1] = coloring;
-		vertexColors[3 * i + 2] = coloring;
+		//igtlFloat32 coloring = clamp((one * norm0[0]), .3f, one);
+		vertexColors[3 * i + 0] = one;
+		vertexColors[3 * i + 1] = one;
+		vertexColors[3 * i + 2] = one;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -306,8 +306,12 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 
+	//Normals
+	glGenBuffers(1, &mNormalBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mNormalBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexColors)*numNormals, normArray, GL_STATIC_DRAW);
 
-	
+	/*
 	//load normals in buffer
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
@@ -323,7 +327,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		0,                                // stride
 		(void*)0                          // array buffer offset
 	);
-
+*/
 	mIsHolographic = isHolographic;
 }
 
@@ -380,6 +384,7 @@ void SimpleRenderer::Draw()
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
+
 
 	if (mIsHolographic)
 	{

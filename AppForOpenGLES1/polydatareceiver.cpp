@@ -138,7 +138,7 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 	}
 	
 	unsigned int nAttr = polyDataMsg->GetNumberOfAttributes();
-	/*
+	
 	for (unsigned int i = 0; i < nAttr; i++)
 	{
 		std::cerr << "  ------ Attributes #" << i << " ------" << std::endl;
@@ -197,7 +197,7 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 			}
 		}
 	}
-	*/
+	
 	// Triangle Strips
 	//igtl::PolyDataCellArray::Pointer triangleStripsArray = polyDataMsg->GetTriangleStrips();
 	//int ntstrips = triangleStripsArray.IsNotNull() ? triangleStripsArray->GetNumberOfCells() : 0;
