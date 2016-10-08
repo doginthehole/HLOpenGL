@@ -23,6 +23,27 @@ using namespace AppForOpenGLES1;
 
 #define STRING(s) #s
 
+template < class X >  // define template function BTW this is a f****ed up clamp
+X clamp(X input, X min, X max)
+{
+
+	if (input < min)
+	{
+		/*float a = .01;
+		float b = .1;
+		float random = ((float)rand()) / (float)RAND_MAX;
+		float diff = b - a;
+		float r = random * diff;
+		min = min + r;*/
+		return min;
+	}
+	else if (input > max)
+		return max;
+	return input;
+
+	return input;
+}
+
 GLuint CompileShader(GLenum type, const std::string &source)
 {
 	GLuint shader = glCreateShader(type);
@@ -112,8 +133,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtl::Sleep(100);
 	}
 	localMutex->Unlock();
-	//"frag.frag", "vert.vert"
-
 
 	// Vertex Shader source
 	const std::string vs = isHolographic ?
@@ -121,10 +140,12 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		(
 			// holographic version
 
-			uniform mat4 uModelMatrix;
+	uniform mat4 uModelMatrix;
 	uniform mat4 uHolographicViewProjectionMatrix[2];
+
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
+	attribute vec3 aNormal;
 	attribute float aRenderTargetArrayIndex;
 	varying vec4 vColor;
 	varying float vRenderTargetArrayIndex;
@@ -136,12 +157,14 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
 	}
 	) : STRING
-	(
-		uniform mat4 uModelMatrix;
+	(//non holographic
+	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
+
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
+	attribute vec3 aNormal;
 	varying vec4 vColor;
 	void main()
 	{
@@ -176,6 +199,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mProgram = CompileProgram(vs, fs);
 	mPositionAttribLocation = glGetAttribLocation(mProgram, "aPosition");
 	mColorAttribLocation = glGetAttribLocation(mProgram, "aColor");
+	mNormalAttribLocation = glGetAttribLocation(mProgram, "aNormal");
 	mRtvIndexAttribLocation = glGetAttribLocation(mProgram, "aRenderTargetArrayIndex");
 	mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
@@ -186,7 +210,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
 	int numPoints = pointsArray->GetNumberOfPoints();
-
 	int numNormals = normArray->GetSize();
 
 	int numPolys = polygonsArray->GetNumberOfCells();
@@ -219,19 +242,37 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 		normArray->GetNthData(iterate, norm0);
 		iterate++;
-
 		igtlFloat32 one = 1.0;
-		
+		//Convert color RGB to float out of 255
+
+		//this doesn't work
+
+
+		float colorsF[4] = { NULL };
+		/*
+		for (int i = 0; i < 4; i++) {
+			colorsF[i] = colors[i] / 255;
+		}
+		float min;
+		*/
+
 		// this will probably need to be moved out of loop, after poly loop
+<<<<<<< HEAD
 		vertexColors[3 * i] = 1;		//The color of the object by vertex
 		vertexColors[3 * i + 1] = 1;
 		vertexColors[3 * i + 2] = 1;
+=======
+		//vertexColors[3 * i] = (one * norm0[0]) + .3;		//The color of the object by vertex
+		//vertexColors[3 * i + 1] = (one * norm0[0]) + .3;
+		//vertexColors[3 * i + 2] = (one * norm0[0]) + .3;
+		//igtlFloat32 coloring = clamp((one * norm0[0]), .3f, one);
+		vertexColors[3 * i + 0] = one;
+		vertexColors[3 * i + 1] = one;
+		vertexColors[3 * i + 2] = one;
+>>>>>>> 114a2e472ad8fc3777231d7f17536afef2e6b86f
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
-
-
-
 	}
 
 
@@ -271,8 +312,12 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 
+	//Normals
+	glGenBuffers(1, &mNormalBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mNormalBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexColors)*numNormals, normArray, GL_STATIC_DRAW);
 
-	
+	/*
 	//load normals in buffer
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
@@ -288,7 +333,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		0,                                // stride
 		(void*)0                          // array buffer offset
 	);
-
+*/
 	mIsHolographic = isHolographic;
 }
 
@@ -319,20 +364,6 @@ SimpleRenderer::~SimpleRenderer()
 	}
 }
 
-template < class X >             // define template function
-X clamp(X input, X min, X max)
-{
-
-	if (input < min)
-		return min;
-	else if (input > max)
-		return max;
-	return input;
-
-	return input;
-}
-
-
 void SimpleRenderer::Draw()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -359,6 +390,7 @@ void SimpleRenderer::Draw()
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
+
 
 	if (mIsHolographic)
 	{
@@ -400,3 +432,5 @@ void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 		mWindowHeight = height;
 	}
 }
+
+
