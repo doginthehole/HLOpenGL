@@ -223,9 +223,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		igtlFloat32 one = 1.0;
 		
 		// this will probably need to be moved out of loop, after poly loop
-		vertexColors[3 * i] = one * norm0[0];		//The color of the object by vertex
-		vertexColors[3 * i + 1] = one * norm0[0];
-		vertexColors[3 * i + 2] = one * norm0[0];
+		vertexColors[3 * i] = 1;		//The color of the object by vertex
+		vertexColors[3 * i + 1] = 1;
+		vertexColors[3 * i + 2] = 1;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
