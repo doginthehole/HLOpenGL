@@ -257,11 +257,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		*/
 
 		// this will probably need to be moved out of loop, after poly loop
-<<<<<<< HEAD
 		vertexColors[3 * i] = 1;		//The color of the object by vertex
 		vertexColors[3 * i + 1] = 1;
 		vertexColors[3 * i + 2] = 1;
-=======
 		//vertexColors[3 * i] = (one * norm0[0]) + .3;		//The color of the object by vertex
 		//vertexColors[3 * i + 1] = (one * norm0[0]) + .3;
 		//vertexColors[3 * i + 2] = (one * norm0[0]) + .3;
@@ -269,7 +267,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vertexColors[3 * i + 0] = one;
 		vertexColors[3 * i + 1] = one;
 		vertexColors[3 * i + 2] = one;
->>>>>>> 114a2e472ad8fc3777231d7f17536afef2e6b86f
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
