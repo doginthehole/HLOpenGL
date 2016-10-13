@@ -5,5 +5,8 @@ void main (void)
 
 
 crap copied from shader string
-				vec3 lightVector = normalize(lightPosition - position);
+		vec3 lightVector = normalize(lightPosition - position);
+		vColor = aColor * dot(lightVector, aNormal);
+
+		vec3 lightVector = normalize(lightPosition - aPosition);
 		vColor = aColor * dot(lightVector, aNormal);

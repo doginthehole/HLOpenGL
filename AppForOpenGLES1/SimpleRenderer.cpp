@@ -1,7 +1,7 @@
 //
 // This file is used by the template to render a basic scene using GL.
 //
-
+#include <iostream>
 #include "pch.h"
 #include "SimpleRenderer.h"
 #include "MathHelper.h"
@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include "PolyDataReceiver.cpp"
-
+#include "glm.hpp"
 using namespace std;
 using namespace Platform;
 using namespace AppForOpenGLES1;
@@ -29,12 +29,6 @@ X clamp(X input, X min, X max)
 
 	if (input < min)
 	{
-		/*float a = .01;
-		float b = .1;
-		float random = ((float)rand()) / (float)RAND_MAX;
-		float diff = b - a;
-		float r = random * diff;
-		min = min + r;*/
 		return min;
 	}
 	else if (input > max)
@@ -62,7 +56,8 @@ GLuint CompileShader(GLenum type, const std::string &source)
 
 		std::vector<GLchar> infoLog(infoLogLength);
 		glGetShaderInfoLog(shader, (GLsizei)infoLog.size(), NULL, infoLog.data());
-
+		string errorS(&infoLog[0]);
+		std::cout << errorS << endl;
 		std::wstring errorMessage = std::wstring(L"Shader compilation failed: ");
 		errorMessage += std::wstring(infoLog.begin(), infoLog.end());
 
@@ -145,7 +140,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
-	attribute vec3 aNormal;
+	attribute vec4 aNormal;
 	attribute float aRenderTargetArrayIndex;
 	varying vec4 vColor;
 	varying float vRenderTargetArrayIndex;
@@ -161,7 +156,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
-
+	//uniform vec3 lightPosition;
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
 	attribute vec3 aNormal;
@@ -169,7 +164,10 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
-		vColor = aColor;
+		//vec3 lightPosition = vec3(1., 2., 0.);
+		//vec3 lightVector = normalize(lightPosition - aPosition.xyz);
+		vec3 lightVector = vec3(0., 1., 0.);
+		vColor = aColor * dot(lightVector, aNormal);
 	}
 	);
 
@@ -243,11 +241,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		normArray->GetNthData(iterate, norm0);
 		iterate++;
 		igtlFloat32 one = 1.0;
-		//Convert color RGB to float out of 255
-
-		//this doesn't work
-
-
 		float colorsF[4] = { NULL };
 		/*
 		for (int i = 0; i < 4; i++) {
@@ -257,9 +250,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		*/
 
 		// this will probably need to be moved out of loop, after poly loop
-		vertexColors[3 * i] = 1;		//The color of the object by vertex
-		vertexColors[3 * i + 1] = 1;
-		vertexColors[3 * i + 2] = 1;
+		//vertexColors[3 * i] = 1;		//The color of the object by vertex
+		//vertexColors[3 * i + 1] = 1;
+		//vertexColors[3 * i + 2] = 1;
 		//vertexColors[3 * i] = (one * norm0[0]) + .3;		//The color of the object by vertex
 		//vertexColors[3 * i + 1] = (one * norm0[0]) + .3;
 		//vertexColors[3 * i + 2] = (one * norm0[0]) + .3;
@@ -271,9 +264,10 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
 	}
+	igtlFloat32 normalArray[8090*3]{};
 
+	normArray->GetData(normalArray);
 
-	//std::list<unsigned int>::iterator iter;
 	std::list<igtlUint32>::iterator iter;
 	short* indices = new short[3 *numPolys];
 	for (int i = 0; i< numPolys; i++)
@@ -288,9 +282,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		}
 	}
 
-
-	//The surface normals will need to be calculated 
-
 	int temp2 = sizeof(vertexPositions)*numPoints * 3;
 	glGenBuffers(1, &mVertexPositionBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
@@ -299,6 +290,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
+
+	//Normals
+	glGenBuffers(1, &mNormalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mNormalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*numNormals, normalArray, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &mIndexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
@@ -309,28 +305,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 
-	//Normals
-	glGenBuffers(1, &mNormalBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mNormalBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexColors)*numNormals, normArray, GL_STATIC_DRAW);
 
-	/*
-	//load normals in buffer
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normArray)*numNormals * 3, normArray, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glVertexAttribPointer(
-		2,                                // attribute
-		3,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-*/
 	mIsHolographic = isHolographic;
 }
 
@@ -384,6 +359,11 @@ void SimpleRenderer::Draw()
 	glEnableVertexAttribArray(mColorAttribLocation);
 	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, mNormalBuffer);
+	glEnableVertexAttribArray(mNormalAttribLocation);
+	glVertexAttribPointer(mNormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
@@ -429,5 +409,3 @@ void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 		mWindowHeight = height;
 	}
 }
-
-
