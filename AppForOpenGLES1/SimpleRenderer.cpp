@@ -144,11 +144,20 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	attribute float aRenderTargetArrayIndex;
 	varying vec4 vColor;
 	varying float vRenderTargetArrayIndex;
+	float brightness;
+	bool minimum = false;
 	void main()
 	{
 		int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
 		gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
-		vColor = aColor;
+		vec3 lightVector = vec3(0., 1., 0.);
+		brightness = dot(lightVector, aNormal);
+		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		//if (brightness < .3)
+			//minimum = true;
+		vec4 minColor = vec4(.3, .3, .3, .3);
+		//vColor = minimum ? minColor : lighting;
+		vColor = lighting;
 		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
 	}
 	) : STRING
@@ -168,14 +177,14 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
 		//vec3 lightPosition = vec3(1., 2., 0.);
 		//vec3 lightVector = normalize(lightPosition - aPosition.xyz);
-		vec3 lightVector = vec3(0., 1., 0.);
+		vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
 		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
-		if (brightness < .3)
-			minimum = true;
+		//if (brightness < .3)
+			//minimum = true;
 		vec4 minColor = vec4(.3, .3, .3, .3);
-		vColor = minimum ? minColor : lighting;
-		//vColor = aColor * dot(lightVector, aNormal);
+		//vColor = minimum ? minColor : lighting;
+		vColor = lighting;
 	}
 	);
 
