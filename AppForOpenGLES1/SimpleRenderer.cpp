@@ -140,7 +140,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
-	attribute vec4 aNormal;
+	attribute vec3 aNormal;
 	attribute float aRenderTargetArrayIndex;
 	varying vec4 vColor;
 	varying float vRenderTargetArrayIndex;
@@ -161,13 +161,21 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	attribute vec4 aColor;
 	attribute vec3 aNormal;
 	varying vec4 vColor;
+	float brightness;
+	bool minimum = false;
 	void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
 		//vec3 lightPosition = vec3(1., 2., 0.);
 		//vec3 lightVector = normalize(lightPosition - aPosition.xyz);
 		vec3 lightVector = vec3(0., 1., 0.);
-		vColor = aColor * dot(lightVector, aNormal);
+		brightness = dot(lightVector, aNormal);
+		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		if (brightness < .3)
+			minimum = true;
+		vec4 minColor = vec4(.3, .3, .3, .3);
+		vColor = minimum ? minColor : lighting;
+		//vColor = aColor * dot(lightVector, aNormal);
 	}
 	);
 
@@ -259,7 +267,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		//igtlFloat32 coloring = clamp((one * norm0[0]), .3f, one);
 		vertexColors[3 * i + 0] = one;
 		vertexColors[3 * i + 1] = one;
-		vertexColors[3 * i + 2] = one;
+		vertexColors[3 * i + 2] = 0;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -365,7 +373,7 @@ void SimpleRenderer::Draw()
 
 
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
-	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000.0f, position);			//////////////////////////////
+	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000000.0f, position);			//////////////////////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
 
