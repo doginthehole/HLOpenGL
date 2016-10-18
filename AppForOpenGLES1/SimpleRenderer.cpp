@@ -132,9 +132,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	// Vertex Shader source
 	const std::string vs = isHolographic ?
 		STRING
-		(
-			// holographic version
-
+		(// holographic version
 	uniform mat4 uModelMatrix;
 	uniform mat4 uHolographicViewProjectionMatrix[2];
 
@@ -154,13 +152,14 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		brightness = dot(lightVector, aNormal);
 		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
 		//if (brightness < .3)
-			//minimum = true;
+			//minimum = true
 		vec4 minColor = vec4(.3, .3, .3, .3);
 		//vColor = minimum ? minColor : lighting;
 		vColor = lighting;
 		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
 	}
 	) : STRING
+
 	(//non holographic
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
@@ -171,15 +170,15 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	attribute vec3 aNormal;
 	varying vec4 vColor;
 	float brightness;
+	vec3 lightPosition = vec3(1., 2., 0.);
 	bool minimum = false;
 	void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
-		//vec3 lightPosition = vec3(1., 2., 0.);
-		//vec3 lightVector = normalize(lightPosition - aPosition.xyz);
-		vec3 lightVector = vec3(1., 1., 0.);
+		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
+		//vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
-		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		vec4 lighting = vec4(brightness, brightness, brightness, 0.);
 		//if (brightness < .3)
 			//minimum = true;
 		vec4 minColor = vec4(.3, .3, .3, .3);
@@ -251,32 +250,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vertexPositions[3 * i + 1] = pos[1] - centerPos[1];
 		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 260; //the x plane of the object, increased by 200 to bring it closer
 		
-		
-		// must now include surface normals for each vert, this will be multiplied by the collor 
-		igtlFloat32 * norm0 = new igtlFloat32[2];
 
-		normArray->GetNthData(iterate, norm0);
-		iterate++;
 		igtlFloat32 one = 1.0;
-		float colorsF[4] = { NULL };
-		/*
-		for (int i = 0; i < 4; i++) {
-			colorsF[i] = colors[i] / 255;
-		}
-		float min;
-		*/
-
-		// this will probably need to be moved out of loop, after poly loop
-		//vertexColors[3 * i] = 1;		//The color of the object by vertex
-		//vertexColors[3 * i + 1] = 1;
-		//vertexColors[3 * i + 2] = 1;
-		//vertexColors[3 * i] = (one * norm0[0]) + .3;		//The color of the object by vertex
-		//vertexColors[3 * i + 1] = (one * norm0[0]) + .3;
-		//vertexColors[3 * i + 2] = (one * norm0[0]) + .3;
-		//igtlFloat32 coloring = clamp((one * norm0[0]), .3f, one);
 		vertexColors[3 * i + 0] = one;
 		vertexColors[3 * i + 1] = one;
-		vertexColors[3 * i + 2] = 0;
+		vertexColors[3 * i + 2] = one;
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0;
@@ -298,12 +276,13 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 			j++;
 		}
 	}
-
+	//Points
 	int temp2 = sizeof(vertexPositions)*numPoints * 3;
 	glGenBuffers(1, &mVertexPositionBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions)*numPoints * 3, vertexPositions, GL_STATIC_DRAW);
 
+	//Color
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
@@ -313,6 +292,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ARRAY_BUFFER, mNormalBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*numNormals, normalArray, GL_STATIC_DRAW);
 
+	//Index
 	glGenBuffers(1, &mIndexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*indices)* numPolys * 3, indices, GL_STATIC_DRAW);
@@ -382,7 +362,7 @@ void SimpleRenderer::Draw()
 
 
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
-	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000000.0f, position);			//////////////////////////////
+	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000000.0f, position);			////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
 
