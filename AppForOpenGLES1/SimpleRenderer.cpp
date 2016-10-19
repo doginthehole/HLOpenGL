@@ -129,7 +129,8 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	}
 	localMutex->Unlock();
 
-	// Vertex Shader source
+
+		// Vertex Shader source
 	const std::string vs = isHolographic ?
 		STRING
 		(// holographic version
@@ -150,7 +151,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
 		vec3 lightVector = vec3(0., 1., 0.);
 		brightness = dot(lightVector, aNormal);
-		vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		//vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		//vec4 lighting = vec4(color[0], color[1], color[2], 1.);
+		vec4 lighting = vec4(225, 0, 0, 1.);
 		//if (brightness < .3)
 			//minimum = true
 		vec4 minColor = vec4(.3, .3, .3, .3);
@@ -159,8 +162,15 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
 	}
 	) : STRING
-
+																								////////////////////////////////////////////////
 	(//non holographic
+		float red;
+		float green;
+		float blue;
+
+		red = colors[0];
+		green = colors[1];
+		blue = colors[2];
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
@@ -174,11 +184,14 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	bool minimum = false;
 	void main()
 	{
+
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
 		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
 		//vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
-		vec4 lighting = vec4(brightness, brightness, brightness, 0.);
+		//vec4 lighting = vec4(brightness, brightness, brightness, 1.);
+		vec4 lighting = vec4(red, green, blue, 1.);
+		//vec4 lighting = vec4(100, 0, 0, 1.);
 		//if (brightness < .3)
 			//minimum = true;
 		vec4 minColor = vec4(.3, .3, .3, .3);
@@ -251,13 +264,13 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 260; //the x plane of the object, increased by 200 to bring it closer
 		
 
-		igtlFloat32 one = 1.0;
-		vertexColors[3 * i + 0] = one;
-		vertexColors[3 * i + 1] = one;
-		vertexColors[3 * i + 2] = one;
+		/*igtlFloat32 one = 1.0;
+		vertexColors[3 * i + 0] = .0;
+		vertexColors[3 * i + 1] = .0;			Cool, I don't need this.
+		vertexColors[3 * i + 2] = .0;*/
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
-		vertexPositions[3 * i+2] /= 100.0;
+		vertexPositions[3 * i+2] /= 100.0; 
 	}
 	igtlFloat32 normalArray[8090*3]{};
 
