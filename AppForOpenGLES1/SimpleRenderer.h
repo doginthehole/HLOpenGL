@@ -13,16 +13,6 @@ namespace AppForOpenGLES1
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 
-		//templated clamp function
-
-/*
-		double dot(double normal, double lightPos) {
-			
-			double result = abs(normal + lightPos);
-
-			return result;
-		}*/
-
     private:
         GLuint mProgram;
         GLsizei mWindowWidth;
@@ -31,6 +21,7 @@ namespace AppForOpenGLES1
         GLint mPositionAttribLocation;
         GLint mColorAttribLocation;
 		GLint mNormalAttribLocation;
+		GLfloat mColors;
 
         GLint mModelUniformLocation;
         GLint mViewUniformLocation;
@@ -48,6 +39,5 @@ namespace AppForOpenGLES1
 
 		//std::vector<Vector3> vertices;
 		//std::vector<Vector4> colors;
-
     };
 }

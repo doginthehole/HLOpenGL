@@ -164,16 +164,17 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	) : STRING
 																								////////////////////////////////////////////////
 	(//non holographic
-		float red;
-		float green;
-		float blue;
-
+		uniform float red;
+		uniform float green;
+		uniform float blue;
+		/*
 		red = colors[0];
 		green = colors[1];
-		blue = colors[2];
+		blue = colors[2];*/
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
+	uniform float uColor;
 	//uniform vec3 lightPosition;
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
@@ -181,7 +182,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	varying vec4 vColor;
 	float brightness;
 	vec3 lightPosition = vec3(1., 2., 0.);
-	bool minimum = false;
+	//bool minimum = false;
 	void main()
 	{
 
@@ -189,8 +190,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
 		//vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
-		//vec4 lighting = vec4(brightness, brightness, brightness, 1.);
-		vec4 lighting = vec4(red, green, blue, 1.);
+		//vec4 lighting = vec4(0, 0, 0, 1.);
+		vec4 lighting = vec4(brightness, brightness, brightness, 1);
+		//vec4 lighting = aColor;
+		//vec4 lighting = vec4(aColor[0]*brightness , aColor[1]*brightness , aColor[2]*brightness , aColor[3]);
+		//vec4 lighting = vec4(red, green, blue, 1.);
 		//vec4 lighting = vec4(100, 0, 0, 1.);
 		//if (brightness < .3)
 			//minimum = true;
@@ -231,8 +235,13 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
 	mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
+	/*
+	float uRed = glGetUniformLocation(mProgram, "red");
+	if (uRed != -1)
+	{
+		glUniform1f(uRed, colors[0]);
+	}*/
 
-	
 	float pos[3] = { 0 };
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
@@ -295,10 +304,10 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexPositionBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions)*numPoints * 3, vertexPositions, GL_STATIC_DRAW);
 
-	//Color
+	//Color - I have changed this and it is forever tainted.
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)*numPolys * 3, vertexColors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)* 3, colors, GL_STATIC_DRAW);
 
 	//Normals
 	glGenBuffers(1, &mNormalBuffer);
@@ -367,7 +376,7 @@ void SimpleRenderer::Draw()
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
 	glEnableVertexAttribArray(mColorAttribLocation);
-	glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(mColorAttribLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mNormalBuffer);
 	glEnableVertexAttribArray(mNormalAttribLocation);
