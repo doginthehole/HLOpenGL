@@ -41,7 +41,7 @@ X clamp(X input, X min, X max)
 GLuint CompileShader(GLenum type, const std::string &source)
 {
 	GLuint shader = glCreateShader(type);
-
+	
 	const char *sourceArray[1] = { source.c_str() };
 	glShaderSource(shader, 1, sourceArray, NULL);
 	glCompileShader(shader);
@@ -164,17 +164,16 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	) : STRING
 																								////////////////////////////////////////////////
 	(//non holographic
-		uniform float red;
+		/*uniform float red;
 		uniform float green;
 		uniform float blue;
-		/*
 		red = colors[0];
 		green = colors[1];
 		blue = colors[2];*/
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
-	uniform float uColor;
+	uniform vec4 uColor;
 	//uniform vec3 lightPosition;
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
@@ -191,15 +190,16 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		//vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
 		//vec4 lighting = vec4(0, 0, 0, 1.);
-		vec4 lighting = vec4(brightness, brightness, brightness, 1);
+		vec4 lighting = vec4(brightness, brightness, brightness, 1 );
 		//vec4 lighting = aColor;
 		//vec4 lighting = vec4(aColor[0]*brightness , aColor[1]*brightness , aColor[2]*brightness , aColor[3]);
 		//vec4 lighting = vec4(red, green, blue, 1.);
 		//vec4 lighting = vec4(100, 0, 0, 1.);
 		//if (brightness < .3)
 			//minimum = true;
-		vec4 minColor = vec4(.3, .3, .3, .3);
+		//vec4 minColor = vec4(.3, .3, .3, .3);
 		//vColor = minimum ? minColor : lighting;
+		//lighting = lighting * uColor;
 		vColor = lighting;
 	}
 	);
@@ -235,13 +235,13 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
 	mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
-	/*
-	float uRed = glGetUniformLocation(mProgram, "red");
-	if (uRed != -1)
-	{
-		glUniform1f(uRed, colors[0]);
-	}*/
 
+	GLint Color;
+	Color = glGetUniformLocation(mProgram, "uColor");
+	//glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
+	glUniform4f(Color, 100, 100, 0, 225);
+
+	
 	float pos[3] = { 0 };
 	std::list<igtlUint32> cell(3, 0);
 	pointsArray->GetPoint(0, pos);
