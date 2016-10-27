@@ -22,6 +22,7 @@ namespace AppForOpenGLES1
         GLint mColorAttribLocation;
 		GLint mNormalAttribLocation;
 		GLfloat mColors;
+		GLint Color;
 
         GLint mModelUniformLocation;
         GLint mViewUniformLocation;

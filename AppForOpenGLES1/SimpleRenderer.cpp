@@ -174,6 +174,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
 	uniform vec4 uColor;
+	uniform float uRedValue;
 	//uniform vec3 lightPosition;
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
@@ -184,7 +185,6 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	//bool minimum = false;
 	void main()
 	{
-
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
 		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
 		//vec3 lightVector = vec3(1., 1., 0.);
@@ -199,7 +199,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 			//minimum = true;
 		//vec4 minColor = vec4(.3, .3, .3, .3);
 		//vColor = minimum ? minColor : lighting;
-		//lighting = lighting * uColor;
+		lighting = lighting * uColor;
 		vColor = lighting;
 	}
 	);
@@ -236,10 +236,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
 	mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
 
-	GLint Color;
+	//Passing the color values through uniform
 	Color = glGetUniformLocation(mProgram, "uColor");
-	//glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
-	glUniform4f(Color, 100, 100, 0, 225);
+	//glUniform4f(Color, 100.00f, 100.00f, 0.00f, 225.00f);
+	//Should now test with grey: rgb(211,211,211)
+
 
 	
 	float pos[3] = { 0 };
@@ -386,6 +387,8 @@ void SimpleRenderer::Draw()
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
 	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000000.0f, position);			////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
+
+	glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
 
 
 	if (mIsHolographic)
