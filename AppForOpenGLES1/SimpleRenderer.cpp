@@ -164,12 +164,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	) : STRING
 																								////////////////////////////////////////////////
 	(//non holographic
-		/*uniform float red;
-		uniform float green;
-		uniform float blue;
-		red = colors[0];
-		green = colors[1];
-		blue = colors[2];*/
+
 	uniform mat4 uModelMatrix;
 	uniform mat4 uViewMatrix;
 	uniform mat4 uProjMatrix;
@@ -199,7 +194,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 			//minimum = true;
 		//vec4 minColor = vec4(.3, .3, .3, .3);
 		//vColor = minimum ? minColor : lighting;
-		lighting = lighting * uColor;
+		//lighting = lighting * uColor;
 		vColor = lighting;
 	}
 	);
