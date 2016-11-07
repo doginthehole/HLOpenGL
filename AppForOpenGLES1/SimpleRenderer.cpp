@@ -136,6 +136,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		(// holographic version
 	uniform mat4 uModelMatrix;
 	uniform mat4 uHolographicViewProjectionMatrix[2];
+	uniform vec4 uColor;
 
 	attribute vec4 aPosition;
 	attribute vec4 aColor;
@@ -149,15 +150,9 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	{
 		int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
 		gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
-		vec3 lightVector = vec3(0., 1., 0.);
+		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
 		brightness = dot(lightVector, aNormal);
-		//vec4 lighting = vec4(brightness, brightness, brightness, 1.);
-		//vec4 lighting = vec4(color[0], color[1], color[2], 1.);
-		vec4 lighting = vec4(225, 0, 0, 1.);
-		//if (brightness < .3)
-			//minimum = true
-		vec4 minColor = vec4(.3, .3, .3, .3);
-		//vColor = minimum ? minColor : lighting;
+		vec4 lighting = vec4(brightness, brightness, brightness, 1);
 		vColor = lighting;
 		vRenderTargetArrayIndex = aRenderTargetArrayIndex;
 	}
@@ -176,25 +171,19 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	attribute vec3 aNormal;
 	varying vec4 vColor;
 	float brightness;
-	vec3 lightPosition = vec3(1., 2., 0.);
+	vec3 lightPosition = vec3(3., 2., 0.);
 	//bool minimum = false;
 	void main()
 	{
 		gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
 		vec3 lightVector = normalize(lightPosition - aPosition.xyz);
+		//lightPosition = lightPosition * uColor;
 		//vec3 lightVector = vec3(1., 1., 0.);
 		brightness = dot(lightVector, aNormal);
 		//vec4 lighting = vec4(0, 0, 0, 1.);
 		vec4 lighting = vec4(brightness, brightness, brightness, 1 );
-		//vec4 lighting = aColor;
-		//vec4 lighting = vec4(aColor[0]*brightness , aColor[1]*brightness , aColor[2]*brightness , aColor[3]);
-		//vec4 lighting = vec4(red, green, blue, 1.);
-		//vec4 lighting = vec4(100, 0, 0, 1.);
-		//if (brightness < .3)
-			//minimum = true;
-		//vec4 minColor = vec4(.3, .3, .3, .3);
-		//vColor = minimum ? minColor : lighting;
-		//lighting = lighting * uColor;
+		lighting = lighting * uColor;
+		//vColor = (1,1,1,1);
 		vColor = lighting;
 	}
 	);
@@ -233,7 +222,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 
 	//Passing the color values through uniform
 	Color = glGetUniformLocation(mProgram, "uColor");
-	//glUniform4f(Color, 100.00f, 100.00f, 0.00f, 225.00f);
+
 	//Should now test with grey: rgb(211,211,211)
 
 
@@ -266,19 +255,15 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 		pointsArray->GetPoint(i, pos);
 		vertexPositions[3 * i] = pos[0] - centerPos[0];
 		vertexPositions[3 * i + 1] = pos[1] - centerPos[1];
-		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 260; //the x plane of the object, increased by 200 to bring it closer
+		vertexPositions[3 * i + 2] = pos[2] - centerPos[2] + 230; //the x plane of the object, increased to bring it closer to the camera
 		
 
-		/*igtlFloat32 one = 1.0;
-		vertexColors[3 * i + 0] = .0;
-		vertexColors[3 * i + 1] = .0;			Cool, I don't need this.
-		vertexColors[3 * i + 2] = .0;*/
 		vertexPositions[3 * i] /= 100.0;
 		vertexPositions[3 * i+1] /= 100.0;
 		vertexPositions[3 * i+2] /= 100.0; 
 	}
-	igtlFloat32 normalArray[8090*3]{};
-
+	igtlFloat32* normalArray;
+	normalArray = new igtlFloat32[numNormals * 3]{};		
 	normArray->GetData(normalArray);
 
 	std::list<igtlUint32>::iterator iter;
@@ -380,10 +365,17 @@ void SimpleRenderer::Draw()
 
 
 	MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
-	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 2000000000.0f, position);			////////////
+	MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 100000000000000.0f, position);			////////////
 	glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
+	float grey[4] = { 211,211,211,255 };
+
+	grey[0] = grey[0] / 255;
+	grey[1] = grey[1] / 255;
+	grey[2] = grey[2] / 255;
+
 	glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
+	//glUniform4f(Color, grey[0], grey[1], grey[2], grey[3]);
 
 
 	if (mIsHolographic)
