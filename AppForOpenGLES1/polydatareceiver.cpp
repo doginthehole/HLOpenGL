@@ -226,7 +226,7 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 
 void ConnectionThread()
 {
-	char*  hostname =  "10.238.141.228"; //	localhost		//////////////////////////////////////
+	char*  hostname =  "localhost"; //		10.238.141.228	//////////////////////////////////////
 	int    port = 18944;			//
 									//------------------------------------------------------------
 									// Establish Connection

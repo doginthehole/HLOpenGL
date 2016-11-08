@@ -17,13 +17,28 @@
 #include <fstream>
 #include "PolyDataReceiver.cpp"
 #include "glm.hpp"
+
+
+#include <vtkVersion.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataNormals.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+#include <vtkSphereSource.h>
+#include <vtkXMLPolyDataReader.h>
+
+
 using namespace std;
 using namespace Platform;
 using namespace AppForOpenGLES1;
 
 #define STRING(s) #s
 
-template < class X >  // define template function BTW this is a f****ed up clamp
+template < class X >  // define template function 
 X clamp(X input, X min, X max)
 {
 
