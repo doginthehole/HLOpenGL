@@ -22,6 +22,8 @@
 #include "igtlMultiThreader.h"
 #include "igtlConditionVariable.h"
 #include "igtlTimeStamp.h"
+#include "igtlImageMessage.h"
+#include "igtlServerSocket.h"
 
 bool interactionActive;
 igtl::ConditionVariable::Pointer conditionVar;
@@ -224,22 +226,50 @@ bool ReceivePolyDataStream(igtl::Socket * socket, igtl::MessageHeader::Pointer h
 }
 
 
-void ConnectionThread()
+void ConnectionThread(int argc, char* argv[])
 {
+
+	//if (argc != 2) // check number of arguments
+	//{
+	//	// If not correct, print usage
+	//	std::cerr << "Usage: " << argv[0] << " <port>" << std::endl;
+	//	std::cerr << "    <port>     : Port # (18944 in Slicer default)" << std::endl;
+	//	exit(0);
+	//}
+
+	//int    port = atoi(argv[1]);
+	int    port = 18954;
+
+	igtl::ServerSocket::Pointer serverSocket;
+	serverSocket = igtl::ServerSocket::New();
+	int r = serverSocket->CreateServer(port);
+	igtl::ClientSocket::Pointer socket;
+	socket = igtl::ClientSocket::New();
+
+	if (r < 0)
+	{
+		std::cerr << "Cannot create a server socket." << std::endl;
+		exit(0);
+	}
+
+	//igtl::Socket::Pointer socket;
+	
+	
+	
+
+	/*
 	char*  hostname =  "localhost"; //		10.238.141.228	//////////////////////////////////////
 	int    port = 18944;			//
 									//------------------------------------------------------------
 									// Establish Connection
 
-	igtl::ClientSocket::Pointer socket;
-	socket = igtl::ClientSocket::New();
 	int r = socket->ConnectToServer(hostname, port);
 
 	if (r != 0)
 	{
 		std::cerr << "Cannot connect to the server." << std::endl;
 		exit(0);
-	}
+	}*/
 
 	//------------------------------------------------------------
 	// Create a message buffer to receive header
