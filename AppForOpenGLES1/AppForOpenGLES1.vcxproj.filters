@@ -31,7 +31,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="SimpleRenderer.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="polydataServer.cpp" />
+    <ClCompile Include="polydatareceiver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />

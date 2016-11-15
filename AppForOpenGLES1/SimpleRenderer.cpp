@@ -15,9 +15,9 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "polydataServer.cpp"
+//#include "polydataServer.cpp"
 #include "glm.hpp"
-//#include "polydatareceiverServer.cpp"
+#include "polydatareceiver.cpp"
 
 #include <vtkVersion.h>
 #include <vtkCellData.h>
