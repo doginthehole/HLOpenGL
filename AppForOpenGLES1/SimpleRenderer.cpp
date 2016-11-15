@@ -15,9 +15,9 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "PolyDataReceiver.cpp"
+#include "polydataServer.cpp"
 #include "glm.hpp"
-
+//#include "polydatareceiverServer.cpp"
 
 #include <vtkVersion.h>
 #include <vtkCellData.h>
@@ -140,7 +140,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	while (!receivedData)
 	{
 		conditionVar->Wait(localMutex);
-		igtl::Sleep(100);
+		igtl::Sleep(30000);
 	}
 	localMutex->Unlock();
 
@@ -239,7 +239,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	Color = glGetUniformLocation(mProgram, "uColor");
 
 	//Should now test with grey: rgb(211,211,211)
-
+	
 
 	
 	float pos[3] = { 0 };
@@ -303,7 +303,7 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
 	//Color - I have changed this and it is forever tainted.
 	glGenBuffers(1, &mVertexColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexColorBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)* 3, colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexColors)* 3, vertexColors, GL_STATIC_DRAW);
 
 	//Normals
 	glGenBuffers(1, &mNormalBuffer);
@@ -389,7 +389,7 @@ void SimpleRenderer::Draw()
 	grey[1] = grey[1] / 255;
 	grey[2] = grey[2] / 255;
 
-	glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
+	//glUniform4f(Color, colors[0], colors[1], colors[2], colors[3]);
 	//glUniform4f(Color, grey[0], grey[1], grey[2], grey[3]);
 
 
